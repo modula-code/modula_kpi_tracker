@@ -1,0 +1,8 @@
+{
+  "defaults": {
+    "booking": 1000000,
+    "walkin": 25,
+    "aov": 600000
+  },
+  "byDesigner": {}
+}

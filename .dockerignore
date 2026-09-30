@@ -1,0 +1,9 @@
+.git
+.next
+node_modules
+.env*
+*.tsbuildinfo
+*.docx
+*.xlsx
+Dockerfile
+docker-compose.yaml
