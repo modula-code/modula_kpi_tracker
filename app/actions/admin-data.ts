@@ -1,10 +1,9 @@
 "use server"
 
-import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-import { SESSION, verifySession } from "@/lib/auth"
+import { requireAdmin } from "@/lib/auth"
 import { updateAdminData } from "@/lib/data/admin-store"
 import { ECS } from "@/lib/data/seed"
 import { ERROR_TYPES, TICKET_STAGES, type AdminData } from "@/lib/data/types"
@@ -12,13 +11,6 @@ import { ERROR_TYPES, TICKET_STAGES, type AdminData } from "@/lib/data/types"
 export interface AdminFormState {
   ok?: boolean
   error?: string
-}
-
-/** The account in AUTH_EMAIL is the superadmin; nobody else can write. */
-async function requireSuperadmin() {
-  const email = await verifySession((await cookies()).get(SESSION.cookie)?.value)
-  const admin = (process.env.AUTH_EMAIL ?? "").trim().toLowerCase()
-  if (!email || !admin || email !== admin) throw new Error("Only the superadmin can change data.")
 }
 
 const monthIdOf = (isoDate: string) => `${isoDate.slice(0, 4)}-M${isoDate.slice(5, 7)}`
@@ -61,7 +53,7 @@ const circleSchema = z.object({
 
 async function save(change: (data: AdminData) => AdminData): Promise<AdminFormState> {
   try {
-    await requireSuperadmin()
+    await requireAdmin()
     await updateAdminData(change)
     revalidatePath("/", "layout")
     return { ok: true }

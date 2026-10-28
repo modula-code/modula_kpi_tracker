@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 
+import { requireAdmin } from "@/lib/auth"
 import { readTargets, writeTargets } from "@/lib/data/targets-store"
 import type { DesignerTargets, TargetConfig } from "@/lib/data/sales-metrics"
 
@@ -31,6 +32,7 @@ export async function saveTargets(
   formData: FormData,
 ): Promise<TargetsState> {
   try {
+    await requireAdmin()
     const designers = String(formData.get("designers") ?? "")
       .split("\n")
       .map((n) => n.trim())

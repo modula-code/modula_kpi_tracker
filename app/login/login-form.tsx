@@ -15,8 +15,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, hubError }: { next: string; hubError?: string }) {
   const [state, formAction, pending] = useActionState<LoginState, FormData>(login, {})
+  const error = state.error ?? hubError
 
   return (
     <Card className="w-full max-w-sm">
@@ -49,14 +50,17 @@ export function LoginForm({ next }: { next: string }) {
               required
             />
           </div>
-          {state.error && (
+          {error && (
             <p role="alert" className="text-destructive text-sm">
-              {state.error}
+              {error}
             </p>
           )}
           <Button type="submit" disabled={pending}>
             {pending && <LoaderCircleIcon className="animate-spin" />}
             Sign in
+          </Button>
+          <Button variant="outline" asChild>
+            <a href={`/auth/hub?next=${encodeURIComponent(next)}`}>Continue with Google</a>
           </Button>
         </form>
       </CardContent>

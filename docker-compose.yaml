@@ -12,6 +12,13 @@ services:
       - AUTH_EMAIL=${AUTH_EMAIL}
       - AUTH_PASSWORD=${AUTH_PASSWORD}
       - AUTH_SECRET=${AUTH_SECRET}
+      # "Continue with Google" via Keycloak (client kpi-tracker); any unset = "not configured".
+      - HUB_ISSUER=${HUB_ISSUER:-}
+      - HUB_CLIENT_ID=${HUB_CLIENT_ID:-}
+      - HUB_CLIENT_SECRET=${HUB_CLIENT_SECRET:-}
+      - HUB_REDIRECT_URI=${HUB_REDIRECT_URI:-}
+      - HUB_POST_LOGOUT_URI=${HUB_POST_LOGOUT_URI:-}
+      - HUB_URL=${HUB_URL:-}
     volumes:
       # Named volume: seeded from the image's data/ on first start, then keeps
       # sales-targets.json and admin-data.json across redeploys.

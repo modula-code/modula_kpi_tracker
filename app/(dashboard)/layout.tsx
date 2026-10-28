@@ -16,7 +16,7 @@ export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const store = await cookies()
-  const email = (await verifySession(store.get(SESSION.cookie)?.value)) ?? ""
+  const email = (await verifySession(store.get(SESSION.cookie)?.value))?.email ?? ""
   const [targets, admin] = await Promise.all([readTargets(), readAdminData()])
   let snapshot: SalesSnapshot
   try {

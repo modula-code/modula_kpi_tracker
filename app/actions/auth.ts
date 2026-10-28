@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { SESSION, signSession } from "@/lib/auth"
+import { logoutUrl, readSso, safeNext, SSO_COOKIE } from "@/lib/sso"
 
 /**
  * ponytail: attempt throttle is a module-level map — good enough for the single
@@ -40,7 +41,8 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
 
   attempts.delete(email)
   const store = await cookies()
-  store.set(SESSION.cookie, await signSession(email), {
+  store.delete(SSO_COOKIE)
+  store.set(SESSION.cookie, await signSession({ email, role: "admin" }), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -48,12 +50,20 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     maxAge: SESSION.maxAge,
   })
 
-  const next = String(formData.get("next") ?? "/")
-  redirect(next.startsWith("/") ? next : "/")
+  redirect(safeNext(String(formData.get("next") ?? "/")))
 }
 
+/** Clears the app session; for Google sign-ins also ends the Keycloak session (RP-initiated logout). */
 export async function logout() {
   const store = await cookies()
+  const sso = readSso(store.get(SSO_COOKIE)?.value)
   store.delete(SESSION.cookie)
-  redirect("/login")
+  store.delete(SSO_COOKIE)
+  let endSession: URL | undefined
+  try {
+    if (sso) endSession = await logoutUrl(sso.idToken)
+  } catch {
+    // Keycloak unreachable: the app session is gone; the central one ends at its idle timeout.
+  }
+  redirect(endSession?.href ?? "/login")
 }
